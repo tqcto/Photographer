@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>iPhone Image Processor</title>
   <link rel="stylesheet" href="style.css">
-  <script type="text/javascript" src="script.js"></script>
 </head>
 <body>
 
@@ -16,17 +15,19 @@
   
   <label class="input-btn">
     画像を選択 / 撮影
-    <input type="file" id="upload" accept="image/*">
+    <!-- <input type="file" id="upload" accept="image/*" oninput="loadImage()"> -->
+     <input type="file" id="upload" accept="image/*">
   </label>
 
   <div>
     <!-- result image -->
-    <img id="result-image" alt="処理結果がここに表示されます" style="display:none;">
+    <img id="result-image" alt="処理結果がここに表示されます">
   </div>
 
   <!-- for processing -->
-  <canvas id="canvas" style="display:none;"></canvas>
+  <canvas id="proc-image" style="display:none;"></canvas>
 </div>
 
+<script type="text/javascript" src="index.js"></script>
 </body>
 </html>

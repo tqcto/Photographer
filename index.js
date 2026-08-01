@@ -1,62 +1,33 @@
 const uploadInput = document.getElementById('upload');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+const procImg = document.getElementById('proc-image');
 const resultImg = document.getElementById('result-image');
+const procImg_ctx = procImg.getContext("2d");
 
 uploadInput.addEventListener('change', (e) => {
-const file = e.target.files[0];
-if (!file) return;
 
-const img = new Image();
-const url = URL.createObjectURL(file);
-
-img.onload = () => {
-
-    // resize image
-    const maxDimension = 1200;
-    let width = img.width;
-    let height = img.height;
-
-    if (width > height && width > maxDimension) {
-        
-        height = Math.round((height * maxDimension) / width);
-        width = maxDimension;
-    
-    } else if (height > maxDimension) {
-    
-        width = Math.round((width * maxDimension) / height);
-        height = maxDimension;
-    
+    const file = e.target.files[0];
+    if (!file) {
+        console.log("can't load image.");
+        return;
     }
 
-    canvas.width = width;
-    canvas.height = height;
-
-    // draw canvas
-    ctx.drawImage(img, 0, 0, width, height);
-
-    // image processing
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
     
-        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-        data[i]     = avg; // Red
-        data[i + 1] = avg; // Green
-        data[i + 2] = avg; // Blue
-    
-    }
-    ctx.putImageData(imageData, 0, 0);
+    img.onload = () => {
 
-    // rendering image for save in phone
-    resultImg.src = canvas.toDataURL('image/jpeg', 0.85);
-    resultImg.style.display = 'block';
+        img.src = url;
 
-    // release
-    URL.revokeObjectURL(url);
+        canvas.width = img.width;
+        canvas.height = img.height;
+        procImg_ctx.drawImage(img, 0, 0);
+        resultImg.src = procImg.toDataURL('image/jpeg');
+        url.revokeObjectURL(url);
 
-};
+    };
 
-img.src = url;
+    resultImg.src = url;
+
+    console.log(e);
 
 });
