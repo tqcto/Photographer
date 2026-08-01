@@ -1,11 +1,10 @@
 const uploadInput = document.getElementById('upload');
 const procImg = document.getElementById('proc-image');
 const resultImg = document.getElementById('result-image');
-const procImg_ctx = procImg.getContext("2d");
+const procImgCtx = procImg.getContext('2d');
 
 uploadInput.addEventListener('change', (e) => {
-
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) {
         console.log("can't load image.");
         return;
@@ -13,21 +12,20 @@ uploadInput.addEventListener('change', (e) => {
 
     const url = URL.createObjectURL(file);
     const img = new Image();
-    
+
     img.onload = () => {
-
-        img.src = url;
-
-        canvas.width = img.width;
-        canvas.height = img.height;
-        procImg_ctx.drawImage(img, 0, 0);
+        procImg.width = img.width;
+        procImg.height = img.height;
+        procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
+        procImgCtx.drawImage(img, 0, 0);
         resultImg.src = procImg.toDataURL('image/jpeg');
-        url.revokeObjectURL(url);
-
+        URL.revokeObjectURL(url);
     };
 
-    resultImg.src = url;
+    img.onerror = () => {
+        URL.revokeObjectURL(url);
+        console.error('Failed to load image.');
+    };
 
-    console.log(e);
-
+    img.src = url;
 });
