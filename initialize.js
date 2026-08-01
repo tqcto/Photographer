@@ -1,17 +1,10 @@
-// load tools
-function addTools() {
+import * as core from './core.js';
 
-    const toolbar = document.getElementById('toolbar');
-    
-    const json_data = await fetch('tools.json');
-    if (!json_data.ok){
-        console.error("Failed to load tools.json");
-        return;
-    }
-    tool_data = await json_data.json();
+// initialize
+function init() {
 
-    renderMainToolbar(tool_data.mainTools);
-    renderSubTOolbar('effect'); // initial select
+    core.test("Hello World!");
 
 }
-document.addEventListener('DOMContentLoaded', addTools);
+//document.addEventListener('DOMContentLoaded', init);
+init();

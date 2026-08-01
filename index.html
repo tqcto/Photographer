@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Photographer</title>
   <link rel="stylesheet" href="style.css">
-  <script src="initialize.js"></script>
+  <script type="module" src="initialize.js"></script>
 </head>
 <body>
 
@@ -39,7 +39,7 @@
       <div id="toolbar" class="toolbar-scroll-container">
         <button class="tool-btn active" data-tool="filter">
           <span class="icon">✨</span>
-          <span class="label">フィルター</span>
+          <span class="label">エフェクト</span>
         </button>
         <button class="tool-btn" data-tool="adjust">
           <span class="icon">🎚️</span>
@@ -64,6 +64,6 @@
   <!-- 内部画像処理用 Canvas -->
   <canvas id="proc-image" style="display:none;"></canvas>
 
-  <script src="index.js"></script>
+  <script type="module" src="ui.js"></script>
 </body>
 </html>
