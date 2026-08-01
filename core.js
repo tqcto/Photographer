@@ -6,7 +6,7 @@ let renderedIndex = 0;
 let renderingIndex = 0;
 
 // plugins for effects
-let effectPlugins = [];
+let effectRegistry = [];
 
 // pipeline list for effects
 /*
@@ -20,6 +20,14 @@ example a pipeline object:
 }
 */
 let pipelineList = [];
+
+export async function registerEffects(registry) {
+
+    effectRegistry = registry;
+    console.log("loaded: " + effectRegistry['gaussian-blur'].id);
+    return 0;
+
+}
 
 // index : Rerendering image for index of effects in pipeline
 export function updatePipeline(index = 0) {
