@@ -1,34 +1,102 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none; /* 長押しによるテキスト選択を防止 */
+  user-select: none;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    padding: 16px;
-    background-color: #f5f5f7;
-    color: #1d1d1f;
-    text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #121212;
+  color: #ffffff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* can't scroll */
 }
 
-.container {
-    max-width: 500px;
-    margin: 0 auto;
+/* header */
+.app-header {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
 }
 
-.input-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: #0071e3;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-input[type="file"] {
-    display: none;
+.save-btn {
+  background-color: #007aff;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-weight: bold;
 }
 
-img, canvas {
-    max-width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* main view */
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  overflow: hidden;
+}
+
+#result-image {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  /*border-radius: 12px;*/
+}
+
+/* sub tools */
+.sub-toolbar {
+  height: 60px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+/* main tools */
+.main-toolbar {
+  height: 65px;
+  background-color: #000000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  /* iPhone X以降の下部バー（Safe Area）対策 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tool-btn {
+  background: none;
+  border: none;
+  color: #8e8e93;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.tool-btn .icon {
+  font-size: 20px;
+}
+
+/* higlight of selected tool */
+.tool-btn.active {
+  color: #ffffff;
 }
