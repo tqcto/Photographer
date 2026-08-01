@@ -3,13 +3,14 @@
 
 <head>
   <meta charset="UTF-8">
-  <!-- viewport options -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>iPhone Image Processor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Photographer</title>
   <link rel="stylesheet" href="style.css">
+  <script src="initialize.js"></script>
 </head>
 <body>
 
+  <!-- ヘッダー -->
   <header class="app-header">
     <h2>Photographer</h2>
     <label class="input-btn">
@@ -19,34 +20,50 @@
     <button id="saveButton" class="save-btn">保存</button>
   </header>
 
+  <!-- 画像表示メイン領域 -->
   <main class="app-main">
-    <img id="result-image">
+    <img id="result-image" alt="処理結果">
   </main>
 
-  <div class="sub-tools" id="subTools">
-    <div class="sub-content" id="subContent">
-      ツール選択
+  <!-- 2段構成の操作エリア -->
+  <div class="bottom-controls">
+    <!-- 1段目：サブツールバー (各機能の選択肢) -->
+    <div class="sub-tools" id="subTools">
+      <div class="sub-scroll-container" id="subContent">
+        <!-- JSで動的にボタン群が挿入されます -->
+      </div>
     </div>
+
+    <!-- 2段目：メインツールバー (機能切り替え) -->
+    <nav class="app-toolbar">
+      <div id="toolbar" class="toolbar-scroll-container">
+        <button class="tool-btn active" data-tool="filter">
+          <span class="icon">✨</span>
+          <span class="label">フィルター</span>
+        </button>
+        <button class="tool-btn" data-tool="adjust">
+          <span class="icon">🎚️</span>
+          <span class="label">調整</span>
+        </button>
+        <button class="tool-btn" data-tool="crop">
+          <span class="icon">✂️</span>
+          <span class="label">切り取り</span>
+        </button>
+        <button class="tool-btn" data-tool="stamp">
+          <span class="icon">🎨</span>
+          <span class="label">スタンプ</span>
+        </button>
+        <button class="tool-btn" data-tool="rotate">
+          <span class="icon">🔄</span>
+          <span class="label">回転</span>
+        </button>
+      </div>
+    </nav>
   </div>
-
-  <nav class="app-toolbar">
-    <button class="tool-btn active" data-tool="filter">
-      <span class="icon"></span>
-      <span class="label">フィルター</span>
-    </button>
-    <button class="tool-btn" data-tool="adjust">
-      <span class="icon"></span>
-      <span class="label">調整</span>
-    </button>
-    <button class="tool-btn" data-tool="crop">
-      <span class="icon"></span>
-      <span class="label">切り取り</span>
-    </button>
-  </nav>
-
-  <!-- for processing -->
+  
+  <!-- 内部画像処理用 Canvas -->
   <canvas id="proc-image" style="display:none;"></canvas>
 
-<script type="text/javascript" src="index.js"></script>
+  <script src="index.js"></script>
 </body>
 </html>

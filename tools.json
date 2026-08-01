@@ -1,0 +1,60 @@
+{
+    "tools": [
+        {
+            "id": "effect",
+            "name": "エフェクト",
+            "icon": ""
+        },
+        {
+            "id": "adjust",
+            "name": "調整",
+            "icon": ""
+        },
+        {
+            "id": "crop",
+            "name": "切り抜き",
+            "icon": ""
+        },
+        {
+            "id": "stamp",
+            "name": "スタンプ",
+            "icon": ""
+        },
+        {
+            "id": "text",
+            "name": "テキスト",
+            "icon": ""
+        },
+        {
+            "id": "brush",
+            "name": "ブラシ",
+            "icon": ""
+        }
+    ],
+    "subtools": {
+        "effect": [
+            {
+                "id": "normal",
+                "name": "ノーマル"
+            },
+            {
+                "id": "grayscale",
+                "name": "モノクロ"
+            },
+            {
+                "id": "sepia",
+                "name": "セピア"
+            }
+        ],
+        "adjust": [
+            {
+                "id": "exposure",
+                "name": "露出"
+            },
+            {
+                "id": "brilliance",
+                "name": "ブリリアンス"
+            }
+        ]
+    }
+}

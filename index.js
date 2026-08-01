@@ -6,65 +6,97 @@ const procImgCtx = procImg.getContext('2d');
 const toolButtons = document.querySelectorAll('.tool-btn');
 const subContent = document.getElementById('subContent');
 
+// 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-        console.log("can't load image.");
-        return;
-    }
+  const file = e.target.files?.[0];
+  if (!file) {
+    console.log("can't load image.");
+    return;
+  }
 
-    const url = URL.createObjectURL(file);
-    const img = new Image();
+  const url = URL.createObjectURL(file);
+  const img = new Image();
 
-    img.onload = () => {
-        procImg.width = img.width;
-        procImg.height = img.height;
-        procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
-        procImgCtx.drawImage(img, 0, 0, img.width, img.height);
-        resultImg.src = procImg.toDataURL('image/png');
-        URL.revokeObjectURL(url);
-    };
+  img.onload = () => {
+    procImg.width = img.width;
+    procImg.height = img.height;
+    procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
+    procImgCtx.drawImage(img, 0, 0, img.width, img.height);
+    resultImg.src = procImg.toDataURL('image/png');
+    URL.revokeObjectURL(url);
+  };
 
-    img.onerror = () => {
-        URL.revokeObjectURL(url);
-        console.error('Failed to load image.');
-    };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    console.error('Failed to load image.');
+  };
 
-    img.src = url;
+  img.src = url;
 });
 
+// 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
   filter: `
-    <button onclick="applyFilter('none')">ノーマル</button>
-    <button onclick="applyFilter('grayscale')">モノクロ</button>
-    <button onclick="applyFilter('sepia')">セピア</button>
+    <button class="sub-option-btn active" onclick="applySubOption(this)">ノーマル</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">モノクロ</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">セピア</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">くっきり</button>
   `,
   adjust: `
-    <label>明るさ: </label>
-    <input type="range" id="brightness" min="0" max="200" value="100">
+    <button class="sub-option-btn active" onclick="applySubOption(this)">明るさ</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">コントラスト</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">彩度</button>
   `,
   crop: `
-    <button>1:1</button>
-    <button>4:3</button>
-    <button>16:9</button>
+    <button class="sub-option-btn active" onclick="applySubOption(this)">フリー</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">1 : 1</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">4 : 3</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">16 : 9</button>
   `,
   stamp: `
-    <span>😊</span> <span>❤️</span> <span>★</span> (タップして配置)
+    <button class="sub-option-btn" onclick="applySubOption(this)">😊</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">❤️</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">★</button>
+  `,
+  rotate: `
+    <button class="sub-option-btn" onclick="applySubOption(this)">左90°</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">右90°</button>
+    <button class="sub-option-btn" onclick="applySubOption(this)">左右反転</button>
   `
 };
 
-// ツールバーの切り替え処理
+// メインツールバーのタップ切替処理
 toolButtons.forEach(button => {
   button.addEventListener('click', () => {
-    // アクティブなボタンのスタイルの変更
+    // 1. アクティブ表示の更新
     toolButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
-    // 選択されたツールに応じたサブメニューの表示
+    // 2. ボタンを画面の中央へ自動スクロール
+    button.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest'
+    });
+
+    // 3. 選択されたツールのサブUIを切り替えて描画
     const toolName = button.getAttribute('data-tool');
-    subContent.innerHTML = toolUI[toolName] || '';
+    if (toolUI[toolName]) {
+      subContent.innerHTML = toolUI[toolName];
+      // サブツールのスクロール位置を左端にリセット
+      subContent.scrollLeft = 0;
+    }
   });
 });
 
-// 初期状態としてフィルターを表示
+// サブツールの選択肢（ボタン）を押した際のアクティブ表示切替関数
+function applySubOption(btnElement) {
+  const siblings = btnElement.parentElement.querySelectorAll('.sub-option-btn');
+  siblings.forEach(btn => btn.classList.remove('active'));
+  btnElement.classList.add('active');
+  
+  console.log(`SubOption selected: ${btnElement.innerText}`);
+}
+
+// 初期化（ページ読み込み時にフィルターのサブUIを表示しておく）
 subContent.innerHTML = toolUI['filter'];
