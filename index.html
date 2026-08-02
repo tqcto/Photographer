@@ -26,7 +26,7 @@
   <!-- 画像表示メイン領域 -->
   <main class="app-main">
     <div class="viewer-stage" id="viewerStage">
-      <img id="result-image" alt="処理結果">
+      <img id="result-image">
     </div>
   </main>
 
@@ -46,24 +46,20 @@
     <nav class="app-toolbar">
       <div id="toolbar" class="toolbar-scroll-container">
         <button class="tool-btn active" data-tool="effect">
-          <span class="icon">✨</span>
+          <img src="img/effect-black.png" width="30" height="30">
           <span class="label", id="effects">エフェクト</span>
         </button>
         <button class="tool-btn" data-tool="adjust">
-          <span class="icon">🎚️</span>
+          <img src="img/adjust-black.png" width="30" height="30">
           <span class="label">調整</span>
         </button>
         <button class="tool-btn" data-tool="crop">
-          <span class="icon">✂️</span>
+          <img src="img/crop-black.png" width="30" height="30">
           <span class="label">切り取り</span>
         </button>
         <button class="tool-btn" data-tool="stamp">
-          <span class="icon">🎨</span>
+          <img src="img/stamp-black.png" width="30" height="30">
           <span class="label">スタンプ</span>
-        </button>
-        <button class="tool-btn" data-tool="rotate">
-          <span class="icon">🔄</span>
-          <span class="label">回転</span>
         </button>
       </div>
     </nav>

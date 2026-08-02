@@ -142,7 +142,7 @@ function saveCurrentImage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'photographer-output.png';
+    link.download = 'output.png';
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
@@ -275,11 +275,6 @@ function renderStaticToolUI(toolName) {
       <button class="sub-option-btn">❤️</button>
       <button class="sub-option-btn">★</button>
     `,
-    rotate: `
-      <button class="sub-option-btn">左90°</button>
-      <button class="sub-option-btn">右90°</button>
-      <button class="sub-option-btn">左右反転</button>
-    `
   };
 
   return uiMap[toolName] || '';
@@ -354,11 +349,6 @@ const toolUI = {
     <button class="sub-option-btn">❤️</button>
     <button class="sub-option-btn">★</button>
   `,
-  rotate: `
-    <button class="sub-option-btn">左90°</button>
-    <button class="sub-option-btn">右90°</button>
-    <button class="sub-option-btn">左右反転</button>
-  `
 };
 
 function renderToolUI(toolName) {
