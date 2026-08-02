@@ -36,7 +36,7 @@ uploadInput.addEventListener('change', (e) => {
 
 // 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
-  filter: `
+  effect: `
     <button class="sub-option-btn active">ノーマル</button>
     <button class="sub-option-btn">モノクロ</button>
     <button class="sub-option-btn">セピア</button>
@@ -104,4 +104,4 @@ subContent.addEventListener('click', (event) => {
 });
 
 // 初期化（ページ読み込み時にフィルターのサブUIを表示しておく）
-subContent.innerHTML = toolUI['filter'];
+subContent.innerHTML = toolUI['effect'];
