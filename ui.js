@@ -6,6 +6,8 @@ const procImgCtx = procImg.getContext('2d');
 const toolButtons = document.querySelectorAll('.tool-btn');
 const subContent = document.getElementById('subContent');
 
+let effectRegistry = {};
+
 // 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
   const file = e.target.files?.[0];
@@ -34,8 +36,59 @@ uploadInput.addEventListener('change', (e) => {
   img.src = url;
 });
 
+export function setPluginRegistry(registry) {
+  effectRegistry = registry || {};
+}
+
+function renderStaticToolUI(toolName) {
+  const uiMap = {
+    adjust: `
+      <button class="sub-option-btn active">明るさ</button>
+      <button class="sub-option-btn">コントラスト</button>
+      <button class="sub-option-btn">彩度</button>
+    `,
+    crop: `
+      <button class="sub-option-btn active">フリー</button>
+      <button class="sub-option-btn">1 : 1</button>
+      <button class="sub-option-btn">4 : 3</button>
+      <button class="sub-option-btn">16 : 9</button>
+    `,
+    stamp: `
+      <button class="sub-option-btn">😊</button>
+      <button class="sub-option-btn">❤️</button>
+      <button class="sub-option-btn">★</button>
+    `,
+    rotate: `
+      <button class="sub-option-btn">左90°</button>
+      <button class="sub-option-btn">右90°</button>
+      <button class="sub-option-btn">左右反転</button>
+    `
+  };
+
+  return uiMap[toolName] || '';
+}
+
+function renderEffectButtons() {
+  const effects = Object.values(effectRegistry);
+
+  subContent.innerHTML = effects.map(effect => {
+    return `<button class="sub-option-btn" data-effect-id="${effect.id}">${effect.label}</button>`;
+  }).join('');
+}
+
+export function renderPluginEffects(registry) {
+  setPluginRegistry(registry);
+  renderEffectButtons();
+}
+
 // 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
+  filter: `
+    <button class="sub-option-btn active">ノーマル</button>
+    <button class="sub-option-btn">モノクロ</button>
+    <button class="sub-option-btn">セピア</button>
+    <button class="sub-option-btn">くっきり</button>
+  `,
   effect: `
     <button class="sub-option-btn active">ノーマル</button>
     <button class="sub-option-btn">モノクロ</button>
@@ -65,27 +118,30 @@ const toolUI = {
   `
 };
 
+function renderToolUI(toolName) {
+  if (toolName === 'effect') {
+    renderEffectButtons();
+    return;
+  }
+
+  subContent.innerHTML = toolUI[toolName] || renderStaticToolUI(toolName);
+  subContent.scrollLeft = 0;
+}
+
 // メインツールバーのタップ切替処理
 toolButtons.forEach(button => {
   button.addEventListener('click', () => {
-    // 1. アクティブ表示の更新
     toolButtons.forEach(btn => btn.classList.remove('active'));
     button.classList.add('active');
 
-    // 2. ボタンを画面の中央へ自動スクロール
     button.scrollIntoView({
       behavior: 'smooth',
       inline: 'center',
       block: 'nearest'
     });
 
-    // 3. 選択されたツールのサブUIを切り替えて描画
     const toolName = button.getAttribute('data-tool');
-    if (toolUI[toolName]) {
-      subContent.innerHTML = toolUI[toolName];
-      // サブツールのスクロール位置を左端にリセット
-      subContent.scrollLeft = 0;
-    }
+    renderToolUI(toolName);
   });
 });
 
@@ -103,5 +159,5 @@ subContent.addEventListener('click', (event) => {
   console.log(`SubOption selected: ${btnElement.textContent.trim()}`);
 });
 
-// 初期化（ページ読み込み時にフィルターのサブUIを表示しておく）
-subContent.innerHTML = toolUI['effect'];
+// 初期化（ページ読み込み時にエフェクトタブの初期表示を保持する）
+renderToolUI('effect');
