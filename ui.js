@@ -5,8 +5,11 @@ const procImgCtx = procImg.getContext('2d');
 
 const toolButtons = document.querySelectorAll('.tool-btn');
 const subContent = document.getElementById('subContent');
+const pipelineContainer = document.getElementById('pipelineContainer');
+const parameterPanel = document.getElementById('parameterPanel');
 
 let effectRegistry = {};
+let pipeline = [];
 
 // 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
@@ -40,6 +43,44 @@ export function setPluginRegistry(registry) {
   effectRegistry = registry || {};
 }
 
+function renderPipelineUI() {
+  if (!pipeline.length) {
+    pipelineContainer.innerHTML = '';
+    return;
+  }
+
+  pipelineContainer.innerHTML = pipeline.map((item, index) => {
+    const arrow = index < pipeline.length - 1 ? '<span class="pipeline-arrow">→</span>' : '';
+    return `<span class="pipeline-step" data-pipeline-index="${index}">${item.label}</span>${arrow}`;
+  }).join('');
+}
+
+function renderParameterUI() {
+  if (!pipeline.length) {
+    parameterPanel.innerHTML = '';
+    return;
+  }
+
+  parameterPanel.innerHTML = pipeline.map((item, index) => {
+    const controls = item.effect.controls || [];
+    const controlMarkup = controls.map(control => {
+      return `
+        <div class="parameter-item">
+          <label>${control.label}</label>
+          <input type="range" data-index="${index}" data-control-key="${control.key}" min="${control.min}" max="${control.max}" step="${control.step}" value="${item.params[control.key] ?? control.default}">
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="pipeline-parameter-group">
+        <div class="pipeline-step">${item.label}</div>
+        ${controlMarkup}
+      </div>
+    `;
+  }).join('');
+}
+
 function renderStaticToolUI(toolName) {
   const uiMap = {
     adjust: `
@@ -69,7 +110,12 @@ function renderStaticToolUI(toolName) {
 }
 
 function renderEffectButtons() {
-  const effects = Object.values(effectRegistry);
+  const effects = Object.values(effectRegistry || {});
+
+  if (!effects.length) {
+    subContent.innerHTML = '';
+    return;
+  }
 
   subContent.innerHTML = effects.map(effect => {
     return `<button class="sub-option-btn" data-effect-id="${effect.id}">${effect.label}</button>`;
@@ -81,20 +127,52 @@ export function renderPluginEffects(registry) {
   renderEffectButtons();
 }
 
+async function applySelectedEffect(effectId) {
+  const effect = effectRegistry[effectId];
+  if (!effect || typeof effect.render !== 'function') {
+    return;
+  }
+
+  try {
+    await window.cvReady;
+  } catch (error) {
+    console.warn('OpenCV is not available, effect cannot be applied.', error);
+    return;
+  }
+
+  const defaultParams = {};
+  for (const control of effect.controls || []) {
+    defaultParams[control.key] = control.default ?? 0;
+  }
+
+  const pipelineItem = {
+    id: effect.id,
+    label: effect.label,
+    effect,
+    params: { ...defaultParams }
+  };
+
+  pipeline.push(pipelineItem);
+
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = procImg.width;
+  outputCanvas.height = procImg.height;
+
+  const renderedCanvas = effect.render(procImg, outputCanvas, pipelineItem.params);
+  if (renderedCanvas instanceof HTMLCanvasElement) {
+    procImg.width = renderedCanvas.width;
+    procImg.height = renderedCanvas.height;
+    procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
+    procImgCtx.drawImage(renderedCanvas, 0, 0);
+    resultImg.src = renderedCanvas.toDataURL('image/png');
+  }
+
+  renderPipelineUI();
+  renderParameterUI();
+}
+
 // 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
-  filter: `
-    <button class="sub-option-btn active">ノーマル</button>
-    <button class="sub-option-btn">モノクロ</button>
-    <button class="sub-option-btn">セピア</button>
-    <button class="sub-option-btn">くっきり</button>
-  `,
-  effect: `
-    <button class="sub-option-btn active">ノーマル</button>
-    <button class="sub-option-btn">モノクロ</button>
-    <button class="sub-option-btn">セピア</button>
-    <button class="sub-option-btn">くっきり</button>
-  `,
   adjust: `
     <button class="sub-option-btn active">明るさ</button>
     <button class="sub-option-btn">コントラスト</button>
@@ -156,8 +234,44 @@ subContent.addEventListener('click', (event) => {
   siblings.forEach(btn => btn.classList.remove('active'));
   btnElement.classList.add('active');
 
+  const effectId = btnElement.dataset.effectId;
+  if (effectId) {
+    applySelectedEffect(effectId);
+  }
+
   console.log(`SubOption selected: ${btnElement.textContent.trim()}`);
 });
 
-// 初期化（ページ読み込み時にエフェクトタブの初期表示を保持する）
-renderToolUI('effect');
+parameterPanel.addEventListener('input', (event) => {
+  const slider = event.target;
+  if (!(slider instanceof HTMLInputElement) || !slider.dataset.index || !slider.dataset.controlKey) {
+    return;
+  }
+
+  const index = Number(slider.dataset.index);
+  const key = slider.dataset.controlKey;
+  const item = pipeline[index];
+  if (!item) {
+    return;
+  }
+
+  item.params[key] = Number(slider.value);
+
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = procImg.width;
+  outputCanvas.height = procImg.height;
+
+  const renderedCanvas = item.effect.render(procImg, outputCanvas, item.params);
+  if (renderedCanvas instanceof HTMLCanvasElement) {
+    procImg.width = renderedCanvas.width;
+    procImg.height = renderedCanvas.height;
+    procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
+    procImgCtx.drawImage(renderedCanvas, 0, 0);
+    resultImg.src = renderedCanvas.toDataURL('image/png');
+  }
+});
+
+// 初期化時は空表示にして、プラグイン読み込み完了後に一覧を描画する
+subContent.innerHTML = '';
+pipelineContainer.innerHTML = '';
+parameterPanel.innerHTML = '';

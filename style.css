@@ -72,6 +72,58 @@ input[type="file"] {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
+.pipeline-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  background-color: #141414;
+  border-bottom: 1px solid #222222;
+  min-height: 44px;
+}
+
+.pipeline-step {
+  flex: 0 0 auto;
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.pipeline-arrow {
+  color: #8e8e93;
+  font-weight: bold;
+}
+
+.parameter-panel {
+  padding: 10px 12px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #222222;
+}
+
+.parameter-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.parameter-item:last-child {
+  margin-bottom: 0;
+}
+
+.parameter-item label {
+  min-width: 72px;
+  font-size: 12px;
+}
+
+.parameter-item input[type="range"] {
+  flex: 1;
+}
+
 /* --- 最下部操作エリアコンテナ --- */
 .bottom-controls {
   background-color: #000000;
