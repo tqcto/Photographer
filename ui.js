@@ -37,31 +37,31 @@ uploadInput.addEventListener('change', (e) => {
 // 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
   filter: `
-    <button class="sub-option-btn active" onclick="applySubOption(this)">ノーマル</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">モノクロ</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">セピア</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">くっきり</button>
+    <button class="sub-option-btn active">ノーマル</button>
+    <button class="sub-option-btn">モノクロ</button>
+    <button class="sub-option-btn">セピア</button>
+    <button class="sub-option-btn">くっきり</button>
   `,
   adjust: `
-    <button class="sub-option-btn active" onclick="applySubOption(this)">明るさ</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">コントラスト</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">彩度</button>
+    <button class="sub-option-btn active">明るさ</button>
+    <button class="sub-option-btn">コントラスト</button>
+    <button class="sub-option-btn">彩度</button>
   `,
   crop: `
-    <button class="sub-option-btn active" onclick="applySubOption(this)">フリー</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">1 : 1</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">4 : 3</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">16 : 9</button>
+    <button class="sub-option-btn active">フリー</button>
+    <button class="sub-option-btn">1 : 1</button>
+    <button class="sub-option-btn">4 : 3</button>
+    <button class="sub-option-btn">16 : 9</button>
   `,
   stamp: `
-    <button class="sub-option-btn" onclick="applySubOption(this)">😊</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">❤️</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">★</button>
+    <button class="sub-option-btn">😊</button>
+    <button class="sub-option-btn">❤️</button>
+    <button class="sub-option-btn">★</button>
   `,
   rotate: `
-    <button class="sub-option-btn" onclick="applySubOption(this)">左90°</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">右90°</button>
-    <button class="sub-option-btn" onclick="applySubOption(this)">左右反転</button>
+    <button class="sub-option-btn">左90°</button>
+    <button class="sub-option-btn">右90°</button>
+    <button class="sub-option-btn">左右反転</button>
   `
 };
 
@@ -89,14 +89,19 @@ toolButtons.forEach(button => {
   });
 });
 
-// サブツールの選択肢（ボタン）を押した際のアクティブ表示切替関数
-function applySubOption(btnElement) {
+// サブツール選択肢のクリック処理（イベント委譲）
+subContent.addEventListener('click', (event) => {
+  const btnElement = event.target.closest('.sub-option-btn');
+  if (!btnElement) {
+    return;
+  }
+
   const siblings = btnElement.parentElement.querySelectorAll('.sub-option-btn');
   siblings.forEach(btn => btn.classList.remove('active'));
   btnElement.classList.add('active');
-  
-  console.log(`SubOption selected: ${btnElement.innerText}`);
-}
+
+  console.log(`SubOption selected: ${btnElement.textContent.trim()}`);
+});
 
 // 初期化（ページ読み込み時にフィルターのサブUIを表示しておく）
 subContent.innerHTML = toolUI['filter'];
