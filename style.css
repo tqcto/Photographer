@@ -62,6 +62,16 @@ input[type="file"] {
   overflow: hidden;
 }
 
+.viewer-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  touch-action: none;
+}
+
 #result-image {
   display: block;
   max-width: 100%;
@@ -70,6 +80,8 @@ input[type="file"] {
   height: auto;
   object-fit: contain;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transform-origin: center center;
+  transition: transform 0.12s ease-out;
 }
 
 .pipeline-container {
@@ -85,17 +97,53 @@ input[type="file"] {
 
 .pipeline-step {
   flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background-color: #2a2a2a;
   color: #fff;
   border: 1px solid #3a3a3a;
   border-radius: 16px;
   padding: 6px 10px;
   font-size: 12px;
+  cursor: pointer;
+}
+
+.pipeline-step.selected {
+  border-color: #007aff;
+  background-color: #1b3a5c;
+}
+
+.pipeline-state {
+  font-size: 10px;
+  color: #8e8e93;
 }
 
 .pipeline-arrow {
   color: #8e8e93;
   font-weight: bold;
+}
+
+.pipeline-parameter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mini-btn {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 5px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mini-btn.danger {
+  border-color: #ff5f57;
+  color: #ffb4ad;
 }
 
 .parameter-panel {
@@ -120,8 +168,22 @@ input[type="file"] {
   font-size: 12px;
 }
 
+.parameter-slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .parameter-item input[type="range"] {
   flex: 1;
+}
+
+.parameter-value {
+  min-width: 42px;
+  text-align: right;
+  font-size: 12px;
+  color: #8e8e93;
 }
 
 /* --- 最下部操作エリアコンテナ --- */
@@ -130,6 +192,12 @@ input[type="file"] {
   border-top: 1px solid #2a2a2a;
   /* iPhone Safariのアドレスバー・ホームバー対策（Safe Area + 12px押し上げ） */
   padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+
+.bottom-controls.is-hidden,
+.pipeline-container.is-hidden,
+.parameter-panel.is-hidden {
+  display: none !important;
 }
 
 /* 1段目：サブツールバー */

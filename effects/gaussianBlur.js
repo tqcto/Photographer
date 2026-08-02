@@ -79,7 +79,7 @@ export const effect = {
             type: 'range',
             min: 0,
             max: 20,
-            step: 1,
+            step: 0.1,
             default: 5
         }
     ],

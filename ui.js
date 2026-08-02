@@ -7,9 +7,166 @@ const toolButtons = document.querySelectorAll('.tool-btn');
 const subContent = document.getElementById('subContent');
 const pipelineContainer = document.getElementById('pipelineContainer');
 const parameterPanel = document.getElementById('parameterPanel');
+const bottomControls = document.querySelector('.bottom-controls');
+const viewerStage = document.getElementById('viewerStage');
+const saveButton = document.getElementById('saveButton');
+const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
 let effectRegistry = {};
 let pipeline = [];
+let sourceCanvas = null;
+let selectedPipelineIndex = -1;
+let previewScale = 1;
+let viewerScale = 1;
+let pinchStartDistance = null;
+let pinchStartScale = 1;
+
+function setControlsVisible(visible) {
+  if (bottomControls) {
+    bottomControls.classList.toggle('is-hidden', !visible);
+  }
+
+  if (pipelineContainer) {
+    pipelineContainer.classList.toggle('is-hidden', !visible);
+  }
+
+  if (parameterPanel) {
+    parameterPanel.classList.toggle('is-hidden', !visible);
+  }
+}
+
+function syncSourceCanvas() {
+  if (!procImg.width || !procImg.height) {
+    return;
+  }
+
+  if (!sourceCanvas || sourceCanvas.width !== procImg.width || sourceCanvas.height !== procImg.height) {
+    sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = procImg.width;
+    sourceCanvas.height = procImg.height;
+  }
+
+  const sourceCtx = sourceCanvas.getContext('2d');
+  sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+  sourceCtx.drawImage(procImg, 0, 0);
+}
+
+function getPreviewScale() {
+  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+    return 1;
+  }
+
+  if (sourceCanvas.width > 2000 || sourceCanvas.height > 1500) {
+    return 0.25;
+  }
+
+  if (sourceCanvas.width > 1500 || sourceCanvas.height > 1100) {
+    return 0.35;
+  }
+
+  if (sourceCanvas.width > 1000 || sourceCanvas.height > 800) {
+    return 0.45;
+  }
+
+  if (sourceCanvas.width > 700 || sourceCanvas.height > 600) {
+    return 0.6;
+  }
+
+  return 0.8;
+}
+
+function cloneCanvas(source) {
+  const clone = document.createElement('canvas');
+  clone.width = source.width;
+  clone.height = source.height;
+  clone.getContext('2d').drawImage(source, 0, 0);
+  return clone;
+}
+
+function renderPipelineToCanvas(inputCanvas) {
+  let currentInput = cloneCanvas(inputCanvas);
+
+  for (const item of pipeline) {
+    if (!item.enabled) {
+      continue;
+    }
+
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = currentInput.width;
+    outputCanvas.height = currentInput.height;
+
+    const renderedCanvas = item.effect.render(currentInput, outputCanvas, item.params);
+    if (renderedCanvas instanceof HTMLCanvasElement) {
+      currentInput = renderedCanvas;
+    }
+  }
+
+  return currentInput;
+}
+
+function rebuildPipelinePreview() {
+  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+    resultImg.src = procImg.toDataURL('image/png');
+    return;
+  }
+
+  previewScale = getPreviewScale();
+  const previewWidth = Math.max(1, Math.round(sourceCanvas.width * previewScale));
+  const previewHeight = Math.max(1, Math.round(sourceCanvas.height * previewScale));
+
+  const previewCanvas = document.createElement('canvas');
+  previewCanvas.width = previewWidth;
+  previewCanvas.height = previewHeight;
+  previewCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0, previewWidth, previewHeight);
+
+  const renderedPreview = renderPipelineToCanvas(previewCanvas);
+  procImg.width = renderedPreview.width;
+  procImg.height = renderedPreview.height;
+  procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
+  procImgCtx.drawImage(renderedPreview, 0, 0);
+
+  resultImg.width = sourceCanvas.width;
+  resultImg.height = sourceCanvas.height;
+  resultImg.style.width = 'auto';
+  resultImg.style.height = 'auto';
+  resultImg.src = renderedPreview.toDataURL('image/png');
+}
+
+function saveCurrentImage() {
+  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+    return;
+  }
+
+  const finalCanvas = renderPipelineToCanvas(sourceCanvas);
+  const saveBlob = (blob) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'photographer-output.png';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  if (finalCanvas.toBlob) {
+    finalCanvas.toBlob(saveBlob, 'image/png');
+    return;
+  }
+
+  saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
+}
+
+function dataURLToBlob(dataURL) {
+  const [header, base64] = dataURL.split(',');
+  const mime = header.match(/data:(.*?);base64/)?.[1] || 'image/png';
+  const binary = atob(base64);
+  const array = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i += 1) {
+    array[i] = binary.charCodeAt(i);
+  }
+
+  return new Blob([array], { type: mime });
+}
 
 // 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
@@ -27,6 +184,10 @@ uploadInput.addEventListener('change', (e) => {
     procImg.height = img.height;
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
+    viewerScale = 1;
+    resultImg.style.transform = 'scale(1)';
+    syncSourceCanvas();
+    setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);
   };
@@ -46,39 +207,54 @@ export function setPluginRegistry(registry) {
 function renderPipelineUI() {
   if (!pipeline.length) {
     pipelineContainer.innerHTML = '';
+    selectedPipelineIndex = -1;
     return;
   }
 
   pipelineContainer.innerHTML = pipeline.map((item, index) => {
     const arrow = index < pipeline.length - 1 ? '<span class="pipeline-arrow">→</span>' : '';
-    return `<span class="pipeline-step" data-pipeline-index="${index}">${item.label}</span>${arrow}`;
+    const selectedClass = selectedPipelineIndex === index ? ' selected' : '';
+    const enableLabel = item.enabled ? 'ON' : 'OFF';
+    return `
+      <button class="pipeline-step${selectedClass}" data-pipeline-index="${index}" type="button">
+        <span>${item.label}</span>
+        <span class="pipeline-state">${enableLabel}</span>
+      </button>
+    ` + arrow;
   }).join('');
 }
 
 function renderParameterUI() {
-  if (!pipeline.length) {
+  if (!pipeline.length || selectedPipelineIndex < 0 || selectedPipelineIndex >= pipeline.length) {
     parameterPanel.innerHTML = '';
     return;
   }
 
-  parameterPanel.innerHTML = pipeline.map((item, index) => {
-    const controls = item.effect.controls || [];
-    const controlMarkup = controls.map(control => {
-      return `
-        <div class="parameter-item">
-          <label>${control.label}</label>
-          <input type="range" data-index="${index}" data-control-key="${control.key}" min="${control.min}" max="${control.max}" step="${control.step}" value="${item.params[control.key] ?? control.default}">
-        </div>
-      `;
-    }).join('');
-
+  const item = pipeline[selectedPipelineIndex];
+  const controls = item.effect.controls || [];
+  const controlMarkup = controls.map(control => {
+    const value = item.params[control.key] ?? control.default;
     return `
-      <div class="pipeline-parameter-group">
-        <div class="pipeline-step">${item.label}</div>
-        ${controlMarkup}
+      <div class="parameter-item">
+        <label>${control.label}</label>
+        <div class="parameter-slider-wrap">
+          <input type="range" data-index="${selectedPipelineIndex}" data-control-key="${control.key}" min="${control.min}" max="${control.max}" step="${control.step}" value="${value}">
+          <span class="parameter-value" data-value-for="${control.key}">${Number(value).toFixed(control.step < 1 ? 1 : 0)}</span>
+        </div>
       </div>
     `;
   }).join('');
+
+  parameterPanel.innerHTML = `
+    <div class="pipeline-parameter-group">
+      <div class="pipeline-parameter-header">
+        <div class="pipeline-step selected">${item.label}</div>
+        <button class="mini-btn" data-action="toggle" data-index="${selectedPipelineIndex}" type="button">${item.enabled ? '無効化' : '有効化'}</button>
+        <button class="mini-btn danger" data-action="delete" data-index="${selectedPipelineIndex}" type="button">削除</button>
+      </div>
+      ${controlMarkup}
+    </div>
+  `;
 }
 
 function renderStaticToolUI(toolName) {
@@ -149,24 +325,13 @@ async function applySelectedEffect(effectId) {
     id: effect.id,
     label: effect.label,
     effect,
+    enabled: true,
     params: { ...defaultParams }
   };
 
   pipeline.push(pipelineItem);
-
-  const outputCanvas = document.createElement('canvas');
-  outputCanvas.width = procImg.width;
-  outputCanvas.height = procImg.height;
-
-  const renderedCanvas = effect.render(procImg, outputCanvas, pipelineItem.params);
-  if (renderedCanvas instanceof HTMLCanvasElement) {
-    procImg.width = renderedCanvas.width;
-    procImg.height = renderedCanvas.height;
-    procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
-    procImgCtx.drawImage(renderedCanvas, 0, 0);
-    resultImg.src = renderedCanvas.toDataURL('image/png');
-  }
-
+  selectedPipelineIndex = pipeline.length - 1;
+  rebuildPipelinePreview();
   renderPipelineUI();
   renderParameterUI();
 }
@@ -242,6 +407,48 @@ subContent.addEventListener('click', (event) => {
   console.log(`SubOption selected: ${btnElement.textContent.trim()}`);
 });
 
+pipelineContainer.addEventListener('click', (event) => {
+  const stepButton = event.target.closest('[data-pipeline-index]');
+  if (!stepButton) {
+    return;
+  }
+
+  selectedPipelineIndex = Number(stepButton.dataset.pipelineIndex);
+  renderPipelineUI();
+  renderParameterUI();
+});
+
+parameterPanel.addEventListener('click', (event) => {
+  const actionButton = event.target.closest('[data-action]');
+  if (!actionButton) {
+    return;
+  }
+
+  const index = Number(actionButton.dataset.index);
+  const item = pipeline[index];
+  if (!item) {
+    return;
+  }
+
+  if (actionButton.dataset.action === 'toggle') {
+    item.enabled = !item.enabled;
+    rebuildPipelinePreview();
+    renderPipelineUI();
+    renderParameterUI();
+    return;
+  }
+
+  if (actionButton.dataset.action === 'delete') {
+    pipeline.splice(index, 1);
+    if (selectedPipelineIndex >= pipeline.length) {
+      selectedPipelineIndex = pipeline.length - 1;
+    }
+    rebuildPipelinePreview();
+    renderPipelineUI();
+    renderParameterUI();
+  }
+});
+
 parameterPanel.addEventListener('input', (event) => {
   const slider = event.target;
   if (!(slider instanceof HTMLInputElement) || !slider.dataset.index || !slider.dataset.controlKey) {
@@ -255,21 +462,16 @@ parameterPanel.addEventListener('input', (event) => {
     return;
   }
 
-  item.params[key] = Number(slider.value);
-
-  const outputCanvas = document.createElement('canvas');
-  outputCanvas.width = procImg.width;
-  outputCanvas.height = procImg.height;
-
-  const renderedCanvas = item.effect.render(procImg, outputCanvas, item.params);
-  if (renderedCanvas instanceof HTMLCanvasElement) {
-    procImg.width = renderedCanvas.width;
-    procImg.height = renderedCanvas.height;
-    procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
-    procImgCtx.drawImage(renderedCanvas, 0, 0);
-    resultImg.src = renderedCanvas.toDataURL('image/png');
+  const nextValue = Number(slider.value);
+  item.params[key] = nextValue;
+  const displayValue = slider.parentElement?.querySelector('.parameter-value');
+  if (displayValue) {
+    displayValue.textContent = Number(nextValue).toFixed(slider.step.includes('.') ? 1 : 0);
   }
+  rebuildPipelinePreview();
 });
+
+saveButton.addEventListener('click', saveCurrentImage);
 
 // 初期化時は空表示にして、プラグイン読み込み完了後に一覧を描画する
 subContent.innerHTML = '';
