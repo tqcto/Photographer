@@ -1,3 +1,5 @@
+import * as core from './core.js';
+
 const uploadInput = document.getElementById('upload');
 const procImg = document.getElementById('proc-image');
 const resultImg = document.getElementById('result-image');
@@ -12,9 +14,9 @@ const viewerStage = document.getElementById('viewerStage');
 const saveButton = document.getElementById('saveButton');
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
-let effectRegistry = {};
-let pipeline = [];
-let sourceCanvas = null;
+// let effectRegistry = {};
+// let pipeline = [];
+// let sourceCanvas = null;
 let selectedPipelineIndex = -1;
 let previewScale = 1;
 let viewerScale = 1;
@@ -40,35 +42,35 @@ function syncSourceCanvas() {
     return;
   }
 
-  if (!sourceCanvas || sourceCanvas.width !== procImg.width || sourceCanvas.height !== procImg.height) {
-    sourceCanvas = document.createElement('canvas');
-    sourceCanvas.width = procImg.width;
-    sourceCanvas.height = procImg.height;
+  if (!core.state.sourceCanvas || core.state.sourceCanvas.width !== procImg.width || core.state.sourceCanvas.height !== procImg.height) {
+    core.state.sourceCanvas = document.createElement('canvas');
+    core.state.sourceCanvas.width = procImg.width;
+    core.state.sourceCanvas.height = procImg.height;
   }
 
-  const sourceCtx = sourceCanvas.getContext('2d');
-  sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+  const sourceCtx = core.state.sourceCanvas.getContext('2d');
+  sourceCtx.clearRect(0, 0, core.state.sourceCanvas.width, core.state.sourceCanvas.height);
   sourceCtx.drawImage(procImg, 0, 0);
 }
 
 function getPreviewScale() {
-  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     return 1;
   }
 
-  if (sourceCanvas.width > 2000 || sourceCanvas.height > 1500) {
+  if (core.state.sourceCanvas.width > 2000 || core.state.sourceCanvas.height > 1500) {
     return 0.25;
   }
 
-  if (sourceCanvas.width > 1500 || sourceCanvas.height > 1100) {
+  if (core.state.sourceCanvas.width > 1500 || core.state.sourceCanvas.height > 1100) {
     return 0.35;
   }
 
-  if (sourceCanvas.width > 1000 || sourceCanvas.height > 800) {
+  if (core.state.sourceCanvas.width > 1000 || core.state.sourceCanvas.height > 800) {
     return 0.45;
   }
 
-  if (sourceCanvas.width > 700 || sourceCanvas.height > 600) {
+  if (core.state.sourceCanvas.width > 700 || core.state.sourceCanvas.height > 600) {
     return 0.6;
   }
 
@@ -86,7 +88,7 @@ function cloneCanvas(source) {
 function renderPipelineToCanvas(inputCanvas) {
   let currentInput = cloneCanvas(inputCanvas);
 
-  for (const item of pipeline) {
+  for (const item of core.state.pipeline) {
     if (!item.enabled) {
       continue;
     }
@@ -105,19 +107,19 @@ function renderPipelineToCanvas(inputCanvas) {
 }
 
 function rebuildPipelinePreview() {
-  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     resultImg.src = procImg.toDataURL('image/png');
     return;
   }
 
   previewScale = getPreviewScale();
-  const previewWidth = Math.max(1, Math.round(sourceCanvas.width * previewScale));
-  const previewHeight = Math.max(1, Math.round(sourceCanvas.height * previewScale));
+  const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
+  const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
 
   const previewCanvas = document.createElement('canvas');
   previewCanvas.width = previewWidth;
   previewCanvas.height = previewHeight;
-  previewCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0, previewWidth, previewHeight);
+  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, previewWidth, previewHeight);
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;
@@ -125,19 +127,19 @@ function rebuildPipelinePreview() {
   procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
   procImgCtx.drawImage(renderedPreview, 0, 0);
 
-  resultImg.width = sourceCanvas.width;
-  resultImg.height = sourceCanvas.height;
+  resultImg.width = core.state.sourceCanvas.width;
+  resultImg.height = core.state.sourceCanvas.height;
   resultImg.style.width = 'auto';
   resultImg.style.height = 'auto';
   resultImg.src = renderedPreview.toDataURL('image/png');
 }
 
 function saveCurrentImage() {
-  if (!sourceCanvas || !sourceCanvas.width || !sourceCanvas.height) {
+  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     return;
   }
 
-  const finalCanvas = renderPipelineToCanvas(sourceCanvas);
+  const finalCanvas = renderPipelineToCanvas(core.state.sourceCanvas);
   const saveBlob = (blob) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -201,18 +203,18 @@ uploadInput.addEventListener('change', (e) => {
 });
 
 export function setPluginRegistry(registry) {
-  effectRegistry = registry || {};
+  core.state.effectRegistry = registry || {};
 }
 
 function renderPipelineUI() {
-  if (!pipeline.length) {
+  if (!core.state.pipeline.length) {
     pipelineContainer.innerHTML = '';
     selectedPipelineIndex = -1;
     return;
   }
 
-  pipelineContainer.innerHTML = pipeline.map((item, index) => {
-    const arrow = index < pipeline.length - 1 ? '<span class="pipeline-arrow">→</span>' : '';
+  pipelineContainer.innerHTML = core.state.pipeline.map((item, index) => {
+    const arrow = index < core.state.pipeline.length - 1 ? '<span class="pipeline-arrow">→</span>' : '';
     const selectedClass = selectedPipelineIndex === index ? ' selected' : '';
     const enableLabel = item.enabled ? 'ON' : 'OFF';
     return `
@@ -225,12 +227,12 @@ function renderPipelineUI() {
 }
 
 function renderParameterUI() {
-  if (!pipeline.length || selectedPipelineIndex < 0 || selectedPipelineIndex >= pipeline.length) {
+  if (!core.state.pipeline.length || selectedPipelineIndex < 0 || selectedPipelineIndex >= core.state.pipeline.length) {
     parameterPanel.innerHTML = '';
     return;
   }
 
-  const item = pipeline[selectedPipelineIndex];
+  const item = core.state.pipeline[selectedPipelineIndex];
   const controls = item.effect.controls || [];
   const controlMarkup = controls.map(control => {
     const value = item.params[control.key] ?? control.default;
@@ -257,31 +259,32 @@ function renderParameterUI() {
   `;
 }
 
-function renderStaticToolUI(toolName) {
-  const uiMap = {
-    adjust: `
-      <button class="sub-option-btn active">明るさ</button>
-      <button class="sub-option-btn">コントラスト</button>
-      <button class="sub-option-btn">彩度</button>
-    `,
-    crop: `
-      <button class="sub-option-btn active">フリー</button>
-      <button class="sub-option-btn">1 : 1</button>
-      <button class="sub-option-btn">4 : 3</button>
-      <button class="sub-option-btn">16 : 9</button>
-    `,
-    stamp: `
-      <button class="sub-option-btn">😊</button>
-      <button class="sub-option-btn">❤️</button>
-      <button class="sub-option-btn">★</button>
-    `,
-  };
+// 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
+const toolUI = {
+  adjust: `
+    <button class="sub-option-btn active">明るさ</button>
+    <button class="sub-option-btn">コントラスト</button>
+    <button class="sub-option-btn">彩度</button>
+  `,
+  crop: `
+    <button class="sub-option-btn active">フリー</button>
+    <button class="sub-option-btn">1 : 1</button>
+    <button class="sub-option-btn">4 : 3</button>
+    <button class="sub-option-btn">16 : 9</button>
+  `,
+  stamp: `
+    <button class="sub-option-btn">😊</button>
+    <button class="sub-option-btn">❤️</button>
+    <button class="sub-option-btn">★</button>
+  `,
+};
 
-  return uiMap[toolName] || '';
+function renderStaticToolUI(toolName) {
+  return toolUI[toolName] || '';
 }
 
 function renderEffectButtons() {
-  const effects = Object.values(effectRegistry || {});
+  const effects = Object.values(core.state.effectRegistry || {});
 
   if (!effects.length) {
     subContent.innerHTML = '';
@@ -299,7 +302,7 @@ export function renderPluginEffects(registry) {
 }
 
 async function applySelectedEffect(effectId) {
-  const effect = effectRegistry[effectId];
+  const effect = core.state.effectRegistry[effectId];
   if (!effect || typeof effect.render !== 'function') {
     return;
   }
@@ -324,32 +327,12 @@ async function applySelectedEffect(effectId) {
     params: { ...defaultParams }
   };
 
-  pipeline.push(pipelineItem);
-  selectedPipelineIndex = pipeline.length - 1;
+  core.state.pipeline.push(pipelineItem);
+  selectedPipelineIndex = core.state.pipeline.length - 1;
   rebuildPipelinePreview();
   renderPipelineUI();
   renderParameterUI();
 }
-
-// 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
-const toolUI = {
-  adjust: `
-    <button class="sub-option-btn active">明るさ</button>
-    <button class="sub-option-btn">コントラスト</button>
-    <button class="sub-option-btn">彩度</button>
-  `,
-  crop: `
-    <button class="sub-option-btn active">フリー</button>
-    <button class="sub-option-btn">1 : 1</button>
-    <button class="sub-option-btn">4 : 3</button>
-    <button class="sub-option-btn">16 : 9</button>
-  `,
-  stamp: `
-    <button class="sub-option-btn">😊</button>
-    <button class="sub-option-btn">❤️</button>
-    <button class="sub-option-btn">★</button>
-  `,
-};
 
 function renderToolUI(toolName) {
   if (toolName === 'effect') {
@@ -415,7 +398,7 @@ parameterPanel.addEventListener('click', (event) => {
   }
 
   const index = Number(actionButton.dataset.index);
-  const item = pipeline[index];
+  const item = core.state.pipeline[index];
   if (!item) {
     return;
   }
@@ -429,9 +412,9 @@ parameterPanel.addEventListener('click', (event) => {
   }
 
   if (actionButton.dataset.action === 'delete') {
-    pipeline.splice(index, 1);
-    if (selectedPipelineIndex >= pipeline.length) {
-      selectedPipelineIndex = pipeline.length - 1;
+    core.state.pipeline.splice(index, 1);
+    if (selectedPipelineIndex >= core.state.pipeline.length) {
+      selectedPipelineIndex = core.state.pipeline.length - 1;
     }
     rebuildPipelinePreview();
     renderPipelineUI();
@@ -447,7 +430,7 @@ parameterPanel.addEventListener('input', (event) => {
 
   const index = Number(slider.dataset.index);
   const key = slider.dataset.controlKey;
-  const item = pipeline[index];
+  const item = core.state.pipeline[index];
   if (!item) {
     return;
   }

@@ -5,26 +5,31 @@ let renderedIndex = 0;
 // now rendering index of effect
 let renderingIndex = 0;
 
-// plugins for effects
-let effectRegistry = [];
+export let state = {
 
-// pipeline list for effects
-/*
-example a pipeline object:
-{
-    id: "gaussian-blur",
-    params: {
-        value: 5
-    },
-    enabled: true
+    // plugins for effects
+    effectRegistry: {},
+
+    // pipeline for effects
+    /*
+    example a pipeline object:
+    {
+        id: "gaussian-blur",
+        params: {
+            value: 5
+        },
+        enabled: true
+    }
+    */
+    pipeline: [],
+
+    // source image
+    sourceCanvas: null,
 }
-*/
-let pipelineList = [];
-
 export async function registerEffects(registry) {
 
-    effectRegistry = registry;
-    console.log("loaded: " + effectRegistry['gaussian-blur'].id);
+    state.effectRegistry = registry;
+    console.log("loaded: " + state.effectRegistry['gaussian-blur'].id);
     return 0;
 
 }
@@ -38,11 +43,11 @@ export function updatePipeline(index = 0) {
 
 export function render(imgObj) {
 
-    if (pipelineList.length === 0) return;
+    if (state.pipeline.length === 0) return;
 
-    if (pipelineList.length >= renderedIndex) {
+    if (state.pipeline.length >= renderedIndex) {
 
-        for (let i = renderedIndex; i < pipelineList.length; i++) {
+        for (let i = renderedIndex; i < state.pipeline.length; i++) {
 
             
 
