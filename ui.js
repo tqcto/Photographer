@@ -167,13 +167,14 @@ uploadInput.addEventListener('change', (e) => {
       1, Math.round(procImg.height * scale)
     );
 
-    console.log("scale:" + scale);
     console.log("preview width:" + core.state.previewWidth);
     console.log("preview height:" + core.state.previewHeight);
 
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);
+
+    rebuildPipelinePreview();
 
   };
 

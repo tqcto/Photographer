@@ -30,6 +30,7 @@ export let state = {
     processingSourceCanvas: null,
 
     // preview scale
+    previewScale: 1.0,
     previewWidth: 0,
     previewHeight: 0,
 
@@ -84,7 +85,9 @@ export function getPreviewScale(width, height) {
 
     const f = 1 / (1 + Math.pow(average / alpha, beta));
 
-    return reduceMin + (reduceMax - reduceMin) * f;
+    state.previewScale = reduceMin + (reduceMax - reduceMin) * f;
+    console.log("preview scale:" + state.previewScale);
+    return state.previewScale;
 
 }
 
