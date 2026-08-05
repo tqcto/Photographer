@@ -37,22 +37,6 @@ function setControlsVisible(visible) {
   }
 }
 
-function syncSourceCanvas() {
-  if (!procImg.width || !procImg.height) {
-    return;
-  }
-
-  if (!core.state.sourceCanvas || core.state.sourceCanvas.width !== procImg.width || core.state.sourceCanvas.height !== procImg.height) {
-    core.state.sourceCanvas = document.createElement('canvas');
-    core.state.sourceCanvas.width = procImg.width;
-    core.state.sourceCanvas.height = procImg.height;
-  }
-
-  const sourceCtx = core.state.sourceCanvas.getContext('2d');
-  sourceCtx.clearRect(0, 0, core.state.sourceCanvas.width, core.state.sourceCanvas.height);
-  sourceCtx.drawImage(procImg, 0, 0);
-}
-
 function cloneCanvas(source) {
   const clone = document.createElement('canvas');
   clone.width = source.width;
@@ -164,7 +148,7 @@ uploadInput.addEventListener('change', (e) => {
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
     viewerScale = 1;
     resultImg.style.transform = 'scale(1)';
-    syncSourceCanvas();
+    core.syncSourceCanvas(procImg);
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);

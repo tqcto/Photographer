@@ -109,8 +109,21 @@ export function render(imgObj) {
 
 }
 
-export function test(sample) {
+// draw sourceCanvas by procImg
+export function syncSourceCanvas(procImg) {
+  
+    if (!procImg.width || !procImg.height) {
+        return;
+    }
 
-    console.log(sample);
-    
+    if (!state.sourceCanvas || state.sourceCanvas.width !== procImg.width || state.sourceCanvas.height !== procImg.height) {
+        state.sourceCanvas = document.createElement('canvas');
+        state.sourceCanvas.width = procImg.width;
+        state.sourceCanvas.height = procImg.height;
+    }
+
+    const sourceCtx = state.sourceCanvas.getContext('2d');
+    sourceCtx.clearRect(0, 0, state.sourceCanvas.width, state.sourceCanvas.height);
+    sourceCtx.drawImage(procImg, 0, 0);
+
 }
