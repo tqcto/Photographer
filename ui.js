@@ -53,30 +53,6 @@ function syncSourceCanvas() {
   sourceCtx.drawImage(procImg, 0, 0);
 }
 
-function getPreviewScale() {
-  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
-    return 1;
-  }
-
-  if (core.state.sourceCanvas.width > 2000 || core.state.sourceCanvas.height > 1500) {
-    return 0.25;
-  }
-
-  if (core.state.sourceCanvas.width > 1500 || core.state.sourceCanvas.height > 1100) {
-    return 0.35;
-  }
-
-  if (core.state.sourceCanvas.width > 1000 || core.state.sourceCanvas.height > 800) {
-    return 0.45;
-  }
-
-  if (core.state.sourceCanvas.width > 700 || core.state.sourceCanvas.height > 600) {
-    return 0.6;
-  }
-
-  return 0.8;
-}
-
 function cloneCanvas(source) {
   const clone = document.createElement('canvas');
   clone.width = source.width;
@@ -112,7 +88,7 @@ function rebuildPipelinePreview() {
     return;
   }
 
-  previewScale = getPreviewScale();
+  previewScale = core.getPreviewScale();
   const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
   const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
 

@@ -34,6 +34,30 @@ export async function registerEffects(registry) {
 
 }
 
+export function getPreviewScale() {
+  if (!state.sourceCanvas || !state.sourceCanvas.width || !state.sourceCanvas.height) {
+    return 1;
+  }
+
+  if (state.sourceCanvas.width > 2000 || state.sourceCanvas.height > 1500) {
+    return 0.25;
+  }
+
+  if (state.sourceCanvas.width > 1500 || state.sourceCanvas.height > 1100) {
+    return 0.35;
+  }
+
+  if (state.sourceCanvas.width > 1000 || state.sourceCanvas.height > 800) {
+    return 0.45;
+  }
+
+  if (state.sourceCanvas.width > 700 || state.sourceCanvas.height > 600) {
+    return 0.6;
+  }
+
+  return 0.8;
+}
+
 // index : Rerendering image for index of effects in pipeline
 export function updatePipeline(index = 0) {
 
