@@ -150,14 +150,27 @@ uploadInput.addEventListener('change', (e) => {
 
     procImg.width = img.width;
     procImg.height = img.height;
-    console.log("width: " + procImg.width);
-    console.log("height: " + procImg.height);
+    console.log("procImg width: " + procImg.width);
+    console.log("procImg height: " + procImg.height);
 
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
     
     resultImg.style.transform = 'scale(1)';
     core.syncSourceCanvas(procImg);
+
+    const scale = core.getPreviewScale(procImg.width, procImg.height);
+    core.state.previewWidth = Math.max(
+      1, Math.round(procImg.width * scale)
+    );
+    core.state.previewHeight = Math.max(
+      1, Math.round(procImg.height * scale)
+    );
+
+    console.log("scale:" + scale);
+    console.log("preview width:" + core.state.previewWidth);
+    console.log("preview height:" + core.state.previewHeight);
+
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);
@@ -170,18 +183,6 @@ uploadInput.addEventListener('change', (e) => {
   };
 
   img.src = url;
-  
-  const scale = core.getPreviewScale(procImg.width, procImg.height);
-  core.state.previewWidth = Math.max(
-    1, Math.round(procImg.width * scale)
-  );
-  core.state.previewHeight = Math.max(
-    1, Math.round(procImg.height * scale)
-  );
-
-  console.log("scale:" + scale);
-  console.log("preview width:" + core.state.previewWidth);
-  console.log("preview height:" + core.state.previewHeight);
 
 });
 

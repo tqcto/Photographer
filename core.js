@@ -78,9 +78,9 @@ export function getPreviewScale(width, height) {
     const beta = 1.2;
 
     // 最大縮小率
-    const reduceMax = 0.65;
+    const reduceMax = 1.0;
     // 最小縮小率
-    const reduceMin = 0.15;
+    const reduceMin = 0.1;
 
     const f = 1 / (1 + Math.pow(average / alpha, beta));
 
