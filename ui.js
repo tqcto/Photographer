@@ -57,7 +57,7 @@ function renderPipelineToCanvas(inputCanvas) {
     outputCanvas.width = currentInput.width;
     outputCanvas.height = currentInput.height;
 
-    const renderedCanvas = item.effect.render(currentInput, outputCanvas, item.params);
+    const renderedCanvas = item.effect.render(currentInput, outputCanvas, item.params, core.details);
     if (renderedCanvas instanceof HTMLCanvasElement) {
       currentInput = renderedCanvas;
     }
@@ -80,9 +80,9 @@ function rebuildPipelinePreview() {
   */
 
   const previewCanvas = document.createElement('canvas');
-  previewCanvas.width = core.state.previewWidth;
-  previewCanvas.height = core.state.previewHeight;
-  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.state.previewWidth, core.state.previewHeight);
+  previewCanvas.width = core.details.previewWidth;
+  previewCanvas.height = core.details.previewHeight;
+  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.details.previewWidth, core.details.previewHeight);
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;
@@ -160,15 +160,15 @@ uploadInput.addEventListener('change', (e) => {
     core.syncSourceCanvas(procImg);
 
     const scale = core.getPreviewScale(procImg.width, procImg.height);
-    core.state.previewWidth = Math.max(
+    core.details.previewWidth = Math.max(
       1, Math.round(procImg.width * scale)
     );
-    core.state.previewHeight = Math.max(
+    core.details.previewHeight = Math.max(
       1, Math.round(procImg.height * scale)
     );
 
-    console.log("preview width:" + core.state.previewWidth);
-    console.log("preview height:" + core.state.previewHeight);
+    console.log("preview width:" + core.details.previewWidth);
+    console.log("preview height:" + core.details.previewHeight);
 
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');

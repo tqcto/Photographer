@@ -29,12 +29,17 @@ export let state = {
     // image for processing
     processingSourceCanvas: null,
 
+}
+
+export let details = {
+
     // preview scale
-    previewScale: 1.0,
-    previewWidth: 0,
-    previewHeight: 0,
+    previewScale: null,
+    previewWidth: null,
+    previewHeight: null,
 
 }
+
 export async function registerEffects(registry) {
 
     state.effectRegistry = registry;
@@ -85,9 +90,9 @@ export function getPreviewScale(width, height) {
 
     const f = 1 / (1 + Math.pow(average / alpha, beta));
 
-    state.previewScale = reduceMin + (reduceMax - reduceMin) * f;
-    console.log("preview scale:" + state.previewScale);
-    return state.previewScale;
+    details.previewScale = reduceMin + (reduceMax - reduceMin) * f;
+    console.log("preview scale:" + details.previewScale);
+    return details.previewScale;
 
 }
 
@@ -95,21 +100,6 @@ export function getPreviewScale(width, height) {
 export function updatePipeline(index = 0) {
 
 
-
-}
-
-export function render(imgObj) {
-
-    if (state.pipeline.length === 0) return;
-
-    if (state.pipeline.length >= renderedIndex) {
-
-        for (let i = renderedIndex; i < state.pipeline.length; i++) {
-
-            
-
-        }
-    }
 
 }
 

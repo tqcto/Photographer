@@ -84,7 +84,7 @@ export const effect = {
         }
     ],
 
-    render: (input, output, params = {}) => {
+    render: (input, output, params = {}, details) => {
         if (!(input instanceof HTMLCanvasElement)) {
             throw new Error('gaussian-blur expects an HTMLCanvasElement input.');
         }
