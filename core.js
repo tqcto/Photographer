@@ -29,6 +29,10 @@ export let state = {
     // image for processing
     processingSourceCanvas: null,
 
+    // preview scale
+    previewWidth: 0,
+    previewHeight: 0,
+
 }
 export async function registerEffects(registry) {
 
@@ -38,7 +42,7 @@ export async function registerEffects(registry) {
 
 }
 
-export function getPreviewScale() {
+export function getPreviewScale(width, height) {
 
     /*
     if (!state.sourceCanvas || !state.sourceCanvas.width || !state.sourceCanvas.height) {
@@ -63,9 +67,6 @@ export function getPreviewScale() {
 
     return 0.8;
     */
-
-    const width = state.sourceCanvas.width;
-    const height = state.sourceCanvas.height;
 
     const average = (width + height) / 2.0;
 

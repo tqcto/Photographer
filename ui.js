@@ -67,19 +67,22 @@ function renderPipelineToCanvas(inputCanvas) {
 }
 
 function rebuildPipelinePreview() {
+
   if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     resultImg.src = procImg.toDataURL('image/png');
     return;
   }
 
+  /*
   previewScale = core.getPreviewScale();
   const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
   const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
+  */
 
   const previewCanvas = document.createElement('canvas');
-  previewCanvas.width = previewWidth;
-  previewCanvas.height = previewHeight;
-  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, previewWidth, previewHeight);
+  previewCanvas.width = core.state.previewWidth;
+  previewCanvas.height = core.state.previewHeight;
+  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.state.previewWidth, core.state.previewHeight);
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;
@@ -92,6 +95,7 @@ function rebuildPipelinePreview() {
   resultImg.style.width = 'auto';
   resultImg.style.height = 'auto';
   resultImg.src = renderedPreview.toDataURL('image/png');
+
 }
 
 function saveCurrentImage() {
@@ -132,6 +136,7 @@ function dataURLToBlob(dataURL) {
 
 // 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
+
   const file = e.target.files?.[0];
   if (!file) {
     console.log("can't load image.");
@@ -142,16 +147,21 @@ uploadInput.addEventListener('change', (e) => {
   const img = new Image();
 
   img.onload = () => {
+
     procImg.width = img.width;
     procImg.height = img.height;
+    console.log("width: " + procImg.width);
+    console.log("height: " + procImg.height);
+
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
-    viewerScale = 1;
+    
     resultImg.style.transform = 'scale(1)';
     core.syncSourceCanvas(procImg);
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);
+
   };
 
   img.onerror = () => {
@@ -160,6 +170,19 @@ uploadInput.addEventListener('change', (e) => {
   };
 
   img.src = url;
+  
+  const scale = core.getPreviewScale(procImg.width, procImg.height);
+  core.state.previewWidth = Math.max(
+    1, Math.round(procImg.width * scale)
+  );
+  core.state.previewHeight = Math.max(
+    1, Math.round(procImg.height * scale)
+  );
+
+  console.log("scale:" + scale);
+  console.log("preview width:" + core.state.previewWidth);
+  console.log("preview height:" + core.state.previewHeight);
+
 });
 
 export function setPluginRegistry(registry) {
