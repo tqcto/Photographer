@@ -35,27 +35,52 @@ export async function registerEffects(registry) {
 }
 
 export function getPreviewScale() {
-  if (!state.sourceCanvas || !state.sourceCanvas.width || !state.sourceCanvas.height) {
+
+    /*
+    if (!state.sourceCanvas || !state.sourceCanvas.width || !state.sourceCanvas.height) {
     return 1;
-  }
+    }
 
-  if (state.sourceCanvas.width > 2000 || state.sourceCanvas.height > 1500) {
+    if (state.sourceCanvas.width > 2000 || state.sourceCanvas.height > 1500) {
     return 0.25;
-  }
+    }
 
-  if (state.sourceCanvas.width > 1500 || state.sourceCanvas.height > 1100) {
+    if (state.sourceCanvas.width > 1500 || state.sourceCanvas.height > 1100) {
     return 0.35;
-  }
+    }
 
-  if (state.sourceCanvas.width > 1000 || state.sourceCanvas.height > 800) {
+    if (state.sourceCanvas.width > 1000 || state.sourceCanvas.height > 800) {
     return 0.45;
-  }
+    }
 
-  if (state.sourceCanvas.width > 700 || state.sourceCanvas.height > 600) {
+    if (state.sourceCanvas.width > 700 || state.sourceCanvas.height > 600) {
     return 0.6;
-  }
+    }
 
-  return 0.8;
+    return 0.8;
+    */
+
+    const width = state.sourceCanvas.width;
+    const height = state.sourceCanvas.height;
+
+    const average = (width + height) / 2.0;
+
+    // 対数ロジスティック分布
+
+    // スケールが半分となる基準値
+    const alpha = 1000;
+    // 減衰率
+    const beta = 1.2;
+
+    // 最大縮小率
+    const reduceMax = 0.65;
+    // 最小縮小率
+    const reduceMin = 0.15;
+
+    const f = 1 / (1 + Math.pow(average / alpha, beta));
+
+    return reduceMin + (reduceMax - reduceMin) * f;
+
 }
 
 // index : Rerendering image for index of effects in pipeline
