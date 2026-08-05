@@ -14,9 +14,6 @@ const viewerStage = document.getElementById('viewerStage');
 const saveButton = document.getElementById('saveButton');
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
-// let effectRegistry = {};
-// let pipeline = [];
-// let sourceCanvas = null;
 let selectedPipelineIndex = -1;
 let previewScale = 1;
 let viewerScale = 1;
@@ -68,21 +65,22 @@ function renderPipelineToCanvas(inputCanvas) {
 
 function rebuildPipelinePreview() {
 
-  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
+  if (
+    !core.state.processingSourceCanvas
+     || !core.state.processingSourceCanvas.width
+      || !core.state.processingSourceCanvas.height) {
     resultImg.src = procImg.toDataURL('image/png');
     return;
   }
 
-  /*
-  previewScale = core.getPreviewScale();
-  const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
-  const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
-  */
-
   const previewCanvas = document.createElement('canvas');
   previewCanvas.width = core.details.previewWidth;
   previewCanvas.height = core.details.previewHeight;
-  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.details.previewWidth, core.details.previewHeight);
+  previewCanvas.getContext('2d').drawImage(
+    core.state.processingSourceCanvas,
+    0, 0,
+    core.details.previewWidth, core.details.previewHeight
+  );
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;

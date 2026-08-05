@@ -93,8 +93,11 @@ export const effect = {
         outputCanvas.width = input.width;
         outputCanvas.height = input.height;
 
+        // const strength = Number(params.value ?? 5) * details.previewScale;
         const strength = Number(params.value ?? 5);
         if (window.cv && typeof window.cv.imread === 'function' && typeof window.cv.GaussianBlur === 'function' && typeof window.cv.imshow === 'function') {
+            
+            console.log("can use opencv");
             const kernel = Math.max(1, Math.min(31, strength * 2 + 1));
             const sigma = Math.max(0.1, strength);
 
@@ -106,6 +109,7 @@ export const effect = {
             src.delete();
             dst.delete();
             return outputCanvas;
+
         }
 
         return applyCanvasGaussianBlur(input, outputCanvas, strength);
