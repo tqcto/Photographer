@@ -73,7 +73,7 @@ export function getPreviewScale(width, height) {
     // 対数ロジスティック分布
 
     // スケールが半分となる基準値
-    const alpha = 1000;
+    const alpha = 300;
     // 減衰率
     const beta = 1.2;
 
