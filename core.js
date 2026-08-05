@@ -25,6 +25,10 @@ export let state = {
 
     // source image
     sourceCanvas: null,
+
+    // image for processing
+    processingSourceCanvas: null,
+
 }
 export async function registerEffects(registry) {
 
