@@ -37,22 +37,6 @@ function setControlsVisible(visible) {
   }
 }
 
-function syncSourceCanvas() {
-  if (!procImg.width || !procImg.height) {
-    return;
-  }
-
-  if (!core.state.sourceCanvas || core.state.sourceCanvas.width !== procImg.width || core.state.sourceCanvas.height !== procImg.height) {
-    core.state.sourceCanvas = document.createElement('canvas');
-    core.state.sourceCanvas.width = procImg.width;
-    core.state.sourceCanvas.height = procImg.height;
-  }
-
-  const sourceCtx = core.state.sourceCanvas.getContext('2d');
-  sourceCtx.clearRect(0, 0, core.state.sourceCanvas.width, core.state.sourceCanvas.height);
-  sourceCtx.drawImage(procImg, 0, 0);
-}
-
 function cloneCanvas(source) {
   const clone = document.createElement('canvas');
   clone.width = source.width;
@@ -73,7 +57,7 @@ function renderPipelineToCanvas(inputCanvas) {
     outputCanvas.width = currentInput.width;
     outputCanvas.height = currentInput.height;
 
-    const renderedCanvas = item.effect.render(currentInput, outputCanvas, item.params);
+    const renderedCanvas = item.effect.render(currentInput, outputCanvas, item.params, core.details);
     if (renderedCanvas instanceof HTMLCanvasElement) {
       currentInput = renderedCanvas;
     }
@@ -83,19 +67,22 @@ function renderPipelineToCanvas(inputCanvas) {
 }
 
 function rebuildPipelinePreview() {
+
   if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     resultImg.src = procImg.toDataURL('image/png');
     return;
   }
 
+  /*
   previewScale = core.getPreviewScale();
   const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
   const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
+  */
 
   const previewCanvas = document.createElement('canvas');
-  previewCanvas.width = previewWidth;
-  previewCanvas.height = previewHeight;
-  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, previewWidth, previewHeight);
+  previewCanvas.width = core.details.previewWidth;
+  previewCanvas.height = core.details.previewHeight;
+  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.details.previewWidth, core.details.previewHeight);
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;
@@ -108,6 +95,7 @@ function rebuildPipelinePreview() {
   resultImg.style.width = 'auto';
   resultImg.style.height = 'auto';
   resultImg.src = renderedPreview.toDataURL('image/png');
+
 }
 
 function saveCurrentImage() {
@@ -148,6 +136,7 @@ function dataURLToBlob(dataURL) {
 
 // 画像読み込み処理
 uploadInput.addEventListener('change', (e) => {
+
   const file = e.target.files?.[0];
   if (!file) {
     console.log("can't load image.");
@@ -158,16 +147,35 @@ uploadInput.addEventListener('change', (e) => {
   const img = new Image();
 
   img.onload = () => {
+
     procImg.width = img.width;
     procImg.height = img.height;
+    console.log("procImg width: " + procImg.width);
+    console.log("procImg height: " + procImg.height);
+
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
-    viewerScale = 1;
+    
     resultImg.style.transform = 'scale(1)';
-    syncSourceCanvas();
+    core.syncSourceCanvas(procImg);
+
+    const scale = core.getPreviewScale(procImg.width, procImg.height);
+    core.details.previewWidth = Math.max(
+      1, Math.round(procImg.width * scale)
+    );
+    core.details.previewHeight = Math.max(
+      1, Math.round(procImg.height * scale)
+    );
+
+    console.log("preview width:" + core.details.previewWidth);
+    console.log("preview height:" + core.details.previewHeight);
+
     setControlsVisible(true);
     resultImg.src = procImg.toDataURL('image/png');
     URL.revokeObjectURL(url);
+
+    rebuildPipelinePreview();
+
   };
 
   img.onerror = () => {
@@ -176,6 +184,7 @@ uploadInput.addEventListener('change', (e) => {
   };
 
   img.src = url;
+
 });
 
 export function setPluginRegistry(registry) {
