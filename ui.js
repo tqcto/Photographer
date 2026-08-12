@@ -14,9 +14,6 @@ const viewerStage = document.getElementById('viewerStage');
 const saveButton = document.getElementById('saveButton');
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
-// let effectRegistry = {};
-// let pipeline = [];
-// let sourceCanvas = null;
 let selectedPipelineIndex = -1;
 let previewScale = 1;
 let viewerScale = 1;
@@ -68,21 +65,22 @@ function renderPipelineToCanvas(inputCanvas) {
 
 function rebuildPipelinePreview() {
 
-  if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
+  if (
+    !core.state.processingSourceCanvas
+     || !core.state.processingSourceCanvas.width
+      || !core.state.processingSourceCanvas.height) {
     resultImg.src = procImg.toDataURL('image/png');
     return;
   }
 
-  /*
-  previewScale = core.getPreviewScale();
-  const previewWidth = Math.max(1, Math.round(core.state.sourceCanvas.width * previewScale));
-  const previewHeight = Math.max(1, Math.round(core.state.sourceCanvas.height * previewScale));
-  */
-
   const previewCanvas = document.createElement('canvas');
   previewCanvas.width = core.details.previewWidth;
   previewCanvas.height = core.details.previewHeight;
-  previewCanvas.getContext('2d').drawImage(core.state.sourceCanvas, 0, 0, core.details.previewWidth, core.details.previewHeight);
+  previewCanvas.getContext('2d').drawImage(
+    core.state.processingSourceCanvas,
+    0, 0,
+    core.details.previewWidth, core.details.previewHeight
+  );
 
   const renderedPreview = renderPipelineToCanvas(previewCanvas);
   procImg.width = renderedPreview.width;
@@ -90,15 +88,19 @@ function rebuildPipelinePreview() {
   procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
   procImgCtx.drawImage(renderedPreview, 0, 0);
 
+  /*
   resultImg.width = core.state.sourceCanvas.width;
   resultImg.height = core.state.sourceCanvas.height;
   resultImg.style.width = 'auto';
   resultImg.style.height = 'auto';
+  */
   resultImg.src = renderedPreview.toDataURL('image/png');
 
 }
 
 function saveCurrentImage() {
+
+  /*
   if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     return;
   }
@@ -119,6 +121,30 @@ function saveCurrentImage() {
   }
 
   saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
+  */
+
+    const finalCanvas = core.finalRender();
+    if (!finalCanvas) {
+      console.warn("There isn't image for save.");
+      return;
+    }
+
+    const saveBlob = (blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'output.png';
+      link.click();
+      setTimeout( () => URL.revokeObjectURL(url), 1000 );
+    };
+
+    if (finalCanvas.toBlob) {
+      finalCanvas.toBlob(saveBlob, 'image/png');
+      return;
+    }
+
+    saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
+  
 }
 
 function dataURLToBlob(dataURL) {
@@ -156,9 +182,6 @@ uploadInput.addEventListener('change', (e) => {
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
     
-    resultImg.style.transform = 'scale(1)';
-    core.syncSourceCanvas(procImg);
-
     const scale = core.getPreviewScale(procImg.width, procImg.height);
     core.details.previewWidth = Math.max(
       1, Math.round(procImg.width * scale)
@@ -166,6 +189,9 @@ uploadInput.addEventListener('change', (e) => {
     core.details.previewHeight = Math.max(
       1, Math.round(procImg.height * scale)
     );
+    
+    resultImg.style.transform = 'scale(1)';
+    core.syncSourceCanvas(procImg);
 
     console.log("preview width:" + core.details.previewWidth);
     console.log("preview height:" + core.details.previewHeight);

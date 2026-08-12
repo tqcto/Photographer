@@ -48,6 +48,18 @@ export async function registerEffects(registry) {
 
 }
 
+export function cloneCanvas(src) {
+
+    const clone = document.createElement('canvas');
+    clone.width = src.width;
+    clone.height = src.height;
+
+    const ctx = clone.getContext('2d');
+    ctx.drawImage(src, 0, 0);
+    return clone;
+
+}
+
 export function getPreviewScale(width, height) {
 
     /*
@@ -111,13 +123,60 @@ export function syncSourceCanvas(procImg) {
     }
 
     if (!state.sourceCanvas || state.sourceCanvas.width !== procImg.width || state.sourceCanvas.height !== procImg.height) {
+    
         state.sourceCanvas = document.createElement('canvas');
         state.sourceCanvas.width = procImg.width;
         state.sourceCanvas.height = procImg.height;
+    
+        state.processingSourceCanvas = document.createElement('canvas');
+        state.processingSourceCanvas.width = procImg.width;
+        state.processingSourceCanvas.height = procImg.height;
+
     }
 
     const sourceCtx = state.sourceCanvas.getContext('2d');
     sourceCtx.clearRect(0, 0, state.sourceCanvas.width, state.sourceCanvas.height);
     sourceCtx.drawImage(procImg, 0, 0);
+
+    const processingSourceCtx = state.processingSourceCanvas.getContext('2d');
+    processingSourceCtx.clearRect(0, 0, state.processingSourceCanvas.width, state.processingSourceCanvas.height);
+    processingSourceCtx.drawImage(procImg, 0, 0);
+
+}
+
+export function finalRender() {
+
+    if (!state.sourceCanvas) return null;
+
+    const fullDitails = {
+        previewScale: 1.0,
+        previewWidth: state.sourceCanvas.width,
+        previewHeight: state.sourceCanvas.height,
+    };
+
+    let inputCanvas = cloneCanvas(state.sourceCanvas);
+
+    // パイプラインのエフェクトを順次適用
+    for (const item of state.pipeline) {
+
+        if (!item.enabled) continue;
+
+        const outputCanvas = document.createElement('canvas');
+        outputCanvas.width = inputCanvas.width;
+        outputCanvas.heigt = inputCanvas.height;
+
+        const renderedCanvas = item.effect.render(
+            inputCanvas,
+            outputCanvas,
+            item.params,
+            fullDitails
+        );
+        if (renderedCanvas instanceof HTMLCanvasElement) {
+            inputCanvas = renderedCanvas;
+        }
+
+    }
+
+    return inputCanvas;
 
 }
