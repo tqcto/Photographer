@@ -13,6 +13,7 @@ const bottomControls = document.querySelector('.bottom-controls');
 const viewerStage = document.getElementById('viewerStage');
 const saveButton = document.getElementById('saveButton');
 const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+const loadingOverlay = document.getElementById('loadingOverlay');
 
 let selectedPipelineIndex = -1;
 let previewScale = 1;
@@ -123,28 +124,47 @@ function saveCurrentImage() {
   saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
   */
 
-    const finalCanvas = core.finalRender();
-    if (!finalCanvas) {
-      console.warn("There isn't image for save.");
-      return;
+  if (loadingOverlay) loadingOverlay.classList.remove('is-hidden');
+
+  setTimeout(async () => {
+
+    try {
+
+      const finalCanvas = core.finalRender();
+      if (!finalCanvas) {
+        console.warn("There isn't image for save.");
+        return;
+      }
+
+      // To image and download
+      await new Promise((resolve) => {
+        finalCanvas.toBlob( (blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'output.png';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }
+          resolve();
+
+        }, 'image/png');
+      });
+
     }
+    catch (error) {
 
-    const saveBlob = (blob) => {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'output.png';
-      link.click();
-      setTimeout( () => URL.revokeObjectURL(url), 1000 );
-    };
+      console.error('saving image is failed.', error);
+      alert('保存処理に失敗しました．');
 
-    if (finalCanvas.toBlob) {
-      finalCanvas.toBlob(saveBlob, 'image/png');
-      return;
     }
+    finally {
+      if (loadingOverlay) loadingOverlay.classList.add('is-hidden');
+    }
+    
+  }, 50);
 
-    saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
-  
 }
 
 function dataURLToBlob(dataURL) {
