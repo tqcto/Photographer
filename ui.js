@@ -99,6 +99,8 @@ function rebuildPipelinePreview() {
 }
 
 function saveCurrentImage() {
+
+  /*
   if (!core.state.sourceCanvas || !core.state.sourceCanvas.width || !core.state.sourceCanvas.height) {
     return;
   }
@@ -119,6 +121,30 @@ function saveCurrentImage() {
   }
 
   saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
+  */
+
+    const finalCanvas = core.finalRender();
+    if (!finalCanvas) {
+      console.warn("There isn't image for save.");
+      return;
+    }
+
+    const saveBlob = (blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'output.png';
+      link.click();
+      setTimeout( () => URL.revokeObjectURL(url), 1000 );
+    };
+
+    if (finalCanvas.toBlob) {
+      finalCanvas.toBlob(saveBlob, 'image/png');
+      return;
+    }
+
+    saveBlob(dataURLToBlob(finalCanvas.toDataURL('image/png')));
+  
 }
 
 function dataURLToBlob(dataURL) {

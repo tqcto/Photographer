@@ -93,8 +93,8 @@ export const effect = {
         outputCanvas.width = input.width;
         outputCanvas.height = input.height;
 
-        // const strength = Number(params.value ?? 5) * details.previewScale;
-        const strength = Number(params.value ?? 5);
+        const strength = Number(params.value ?? 5) * 10 * details.previewScale;
+        // const strength = Number(params.value ?? 5);
         if (window.cv && typeof window.cv.imread === 'function' && typeof window.cv.GaussianBlur === 'function' && typeof window.cv.imshow === 'function') {
             
             console.log("can use opencv");
