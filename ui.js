@@ -88,10 +88,12 @@ function rebuildPipelinePreview() {
   procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
   procImgCtx.drawImage(renderedPreview, 0, 0);
 
+  /*
   resultImg.width = core.state.sourceCanvas.width;
   resultImg.height = core.state.sourceCanvas.height;
   resultImg.style.width = 'auto';
   resultImg.style.height = 'auto';
+  */
   resultImg.src = renderedPreview.toDataURL('image/png');
 
 }

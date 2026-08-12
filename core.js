@@ -111,13 +111,23 @@ export function syncSourceCanvas(procImg) {
     }
 
     if (!state.sourceCanvas || state.sourceCanvas.width !== procImg.width || state.sourceCanvas.height !== procImg.height) {
+    
         state.sourceCanvas = document.createElement('canvas');
         state.sourceCanvas.width = procImg.width;
         state.sourceCanvas.height = procImg.height;
+    
+        state.processingSourceCanvas = document.createElement('canvas');
+        state.processingSourceCanvas.width = procImg.width;
+        state.processingSourceCanvas.height = procImg.height;
+
     }
 
     const sourceCtx = state.sourceCanvas.getContext('2d');
     sourceCtx.clearRect(0, 0, state.sourceCanvas.width, state.sourceCanvas.height);
     sourceCtx.drawImage(procImg, 0, 0);
+
+    const processingSourceCtx = state.processingSourceCanvas.getContext('2d');
+    processingSourceCtx.clearRect(0, 0, state.processingSourceCanvas.width, state.processingSourceCanvas.height);
+    processingSourceCtx.drawImage(procImg, 0, 0);
 
 }
