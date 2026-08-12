@@ -148,7 +148,7 @@ export function finalRender() {
 
     if (!state.sourceCanvas) return null;
 
-    const fullDitails = {
+    const fullDetails = {
         previewScale: 1.0,
         previewWidth: state.sourceCanvas.width,
         previewHeight: state.sourceCanvas.height,
@@ -169,7 +169,7 @@ export function finalRender() {
             inputCanvas,
             outputCanvas,
             item.params,
-            fullDitails
+            fullDetails
         );
         if (renderedCanvas instanceof HTMLCanvasElement) {
             inputCanvas = renderedCanvas;
