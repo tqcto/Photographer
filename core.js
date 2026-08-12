@@ -163,7 +163,7 @@ export function finalRender() {
 
         const outputCanvas = document.createElement('canvas');
         outputCanvas.width = inputCanvas.width;
-        outputCanvas.heigt = inputCanvas.height;
+        outputCanvas.height = inputCanvas.height;
 
         const renderedCanvas = item.effect.render(
             inputCanvas,
