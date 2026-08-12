@@ -156,9 +156,6 @@ uploadInput.addEventListener('change', (e) => {
     procImgCtx.clearRect(0, 0, procImg.width, procImg.height);
     procImgCtx.drawImage(img, 0, 0, img.width, img.height);
     
-    resultImg.style.transform = 'scale(1)';
-    core.syncSourceCanvas(procImg);
-
     const scale = core.getPreviewScale(procImg.width, procImg.height);
     core.details.previewWidth = Math.max(
       1, Math.round(procImg.width * scale)
@@ -166,6 +163,9 @@ uploadInput.addEventListener('change', (e) => {
     core.details.previewHeight = Math.max(
       1, Math.round(procImg.height * scale)
     );
+    
+    resultImg.style.transform = 'scale(1)';
+    core.syncSourceCanvas(procImg);
 
     console.log("preview width:" + core.details.previewWidth);
     console.log("preview height:" + core.details.previewHeight);
