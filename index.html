@@ -6,8 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Photographer</title>
   <link rel="stylesheet" href="style.css">
+  <script async src="./lib/opencv.js" onload="onOpenCvReady();"></script>
   <script>
-    window.cvReady = Promise.resolve(window.cv || null);
+    window.isOpenCvReady = false;
+
+    function onOpenCvReady() {
+      if (window.cv && window.cv.Mat) {
+        window.isOpenCvReady = true;
+        window.dispatchEvent(new CustomEvent('opencv-ready'));
+      } else if (window.cv) {
+        window.cv['onRuntimeInitialized'] = () => {
+          window.isOpenCvReady = true;
+          console.log('OpenCV.js successfully initialized via GitHub Pages!');
+          window.dispatchEvent(new CustomEvent('opencv-ready'));
+        };
+      }
+    }
   </script>
   <script type="module" src="initialize.js"></script>
 </head>
