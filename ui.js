@@ -35,6 +35,12 @@ function setControlsVisible(visible) {
   }
 }
 
+function showToolbar() {
+
+  bottomControls.classList.remove('is-hidden');
+
+}
+
 function cloneCanvas(source) {
   const clone = document.createElement('canvas');
   clone.width = source.width;
@@ -221,6 +227,8 @@ uploadInput.addEventListener('change', (e) => {
     URL.revokeObjectURL(url);
 
     rebuildPipelinePreview();
+
+    showToolbar();
 
   };
 
