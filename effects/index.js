@@ -2,7 +2,8 @@ export async function loadPlugins() {
 
     // if add plugins, add here
     const pluginList = [
-        "./gaussianBlur.js"
+        "./gaussianBlur.js",
+        "./contrast.js",
     ];
 
     const modules = await Promise.all(
