@@ -292,11 +292,13 @@ function renderParameterUI() {
 
 // 各ツールが選択された際のサブ UI 定義 (.sub-option-btn クラスを適用)
 const toolUI = {
+  /*
   adjust: `
     <button class="sub-option-btn active">明るさ</button>
     <button class="sub-option-btn">コントラスト</button>
     <button class="sub-option-btn">彩度</button>
   `,
+  */
   crop: `
     <button class="sub-option-btn active">フリー</button>
     <button class="sub-option-btn">1 : 1</button>
