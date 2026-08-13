@@ -40,6 +40,11 @@ function showToolbar() {
   bottomControls.classList.remove('is-hidden');
 
 }
+function hideToolbar() {
+
+  bottomControls.classList.add('is-hidden');
+
+}
 
 function cloneCanvas(source) {
   const clone = document.createElement('canvas');
